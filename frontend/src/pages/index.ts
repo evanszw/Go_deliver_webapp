@@ -1,0 +1,11 @@
+export { Home } from "./Home";
+export { Services } from "./Services";
+export { HowItWorksPage } from "./HowItWorks";
+export { ServiceAreas } from "./ServiceAreas";
+export { FAQ } from "./FAQ";
+export { Contact } from "./Contact";
+export { Privacy } from "./Privacy";
+export { Terms } from "./Terms";
+export { Booking } from "./Booking";
+export { Track } from "./Track";
+export { Login } from "./Login";

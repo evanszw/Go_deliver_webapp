@@ -1,0 +1,103 @@
+// Go Deliver Prisma schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  passwordHash String
+  name      String
+  role      String   @default("STAFF")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+model Service {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  startingPrice Int?     // numeric starting price, no currency symbol
+  isActive    Boolean  @default(true)
+  imageUrl    String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  requests    DeliveryRequest[]
+
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model DeliveryRequest {
+  id               String      @id @default(uuid())
+  referenceNumber  String      @unique
+  customerName     String
+  customerPhone    String
+  pickupAddress    String
+  deliveryDestination String
+  recipientName    String?
+  recipientPhone   String?
+  serviceId        String?
+  service          Service?    @relation(fields: [serviceId], references: [id])
+  itemDescription  String?
+  additionalInstructions String?
+   internalNotes   String?
+  preferredDateTime DateTime?
+  status           String      @default("NEW") // NEW, REVIEWED, ACCEPTED, COMPLETED, CANCELLED
+  whatsappSent     Boolean     @default(false)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@index([status])
+  @@index([referenceNumber])
+  @@index([createdAt])
+}
+
+model ServiceArea {
+  id            String   @id @default(uuid())
+  name          String
+  address       String?
+  operatingHours String?
+  contactPhone  String?
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model FAQ {
+  id        String   @id @default(uuid())
+  question  String
+  answer    String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model ContactInfo {
+  id   String @id @default(uuid())
+  key  String @unique
+  value String
+}
+
+model SiteContent {
+  id   String @id @default(uuid())
+  key  String @unique
+  value String
+}

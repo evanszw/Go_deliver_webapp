@@ -1,0 +1,222 @@
+================================================================================
+GO DELIVER - PROJECT ARCHITECTURE & OPERATIONAL MANUAL
+================================================================================
+Generated for: EVS Tech
+Application: Go Deliver (Urban Logistics & Courier Dispatch Platform)
+Last Updated: March 2025
+
+--------------------------------------------------------------------------------
+1. PROJECT OVERVIEW
+--------------------------------------------------------------------------------
+Go Deliver is a full-stack, enterprise-grade urban delivery and courier platform.
+It provides instant customer delivery booking, multi-step courier quote requests,
+real-time dispatch tracking by unique tracking codes, and an administrative control
+panel for fleet dispatchers to manage requests, services, service coverage areas,
+frequently asked questions (FAQs), multi-channel contact endpoints (WhatsApp,
+Facebook, Telegram, Phone lines), and dispatcher administrative accounts.
+
+--------------------------------------------------------------------------------
+2. TECH STACK SPECIFICATION
+--------------------------------------------------------------------------------
+A. Frontend:
+   - Framework: React 18.2 with TypeScript (TSX)
+   - Build Tool & Dev Server: Vite 5
+   - Styling: Tailwind CSS with customized brand palette:
+     * Brand Red: #E53935 / Hover: #D32F2F
+     * Brand Dark: #0F1115 / Secondary: #171A21
+     * Brand Light: #F8F9FA / Border: #E2E8F0
+     * JetBrains Mono for tracking & numerical codes
+     * Plus Jakarta Sans for UI typography
+   - Routing: React Router DOM v6 (Client-side single-page app)
+   - Icons: Lucide React (feather-style modern vector icons)
+   - Maps: Leaflet & OpenStreetMap integration with custom courier dispatch markers
+   - Validation: Custom strict numeric & phone sanitizers (blocks all non-digits)
+
+B. Backend:
+   - Runtime: Node.js (via tsx execution engine)
+   - Web Server: Express 4.18
+   - Security: Helmet (CSP configured for framed preview), CORS with credentials,
+     and express-rate-limit protecting API endpoints
+   - Authentication: HTTP-only cookies & Bearer JWT token verification
+   - Password Hashing: Node.js crypto scrypt with unique salt per password
+   - Database ORM: Prisma ORM (v5) with SQLite database (prisma/dev.db)
+     Easily swappable to PostgreSQL / Cloud SQL via DATABASE_URL
+
+C. Unified Server:
+   - server.ts: Dual-mode single entry point running on port 3000.
+     In development, acts as an API proxy forwarding client routes to Vite.
+     In production, statically serves compiled frontend bundle with SPA fallback.
+
+--------------------------------------------------------------------------------
+3. DIRECTORY & FILE STRUCTURE BREAKDOWN
+--------------------------------------------------------------------------------
+/
+├── server.ts                   # Unified root server (Port 3000)
+├── package.json                # Root package configuration & run scripts
+├── metadata.json               # AI Studio project descriptor
+├── evstech.info                # Technical specifications & maintenance guide
+├── .env.example                # Environment variable blueprints
+│
+├── frontend/                   # Client application
+│   ├── index.html              # HTML shell with Google Fonts & meta tags
+│   ├── package.json            # Frontend dependencies (React, Vite, Lucide)
+│   ├── vite.config.ts          # Vite build configuration with proxy rules
+│   ├── tailwind.config.js      # Brand colors, fonts, and animation extensions
+│   ├── public/                 # Static assets:
+│   │   ├── logo.jpg            # Primary Go Deliver brand emblem
+│   │   └── images/             # Fleet vehicles and courier photos
+│   └── src/
+│       ├── main.tsx            # React root bootstrap
+│       ├── App.tsx             # Routes & layout definitions
+│       ├── types/              # TypeScript interface definitions (Request, Contact)
+│       ├── config/business.ts  # Fallback business hours and initial contact info
+│       ├── services/api.ts     # Axios-like typed fetch client for all API routes
+│       ├── components/
+│       │   ├── layout/
+│       │   │   ├── Navbar.tsx             # Animated hamburger navigation & logo
+│       │   │   ├── Footer.tsx             # Dynamic multi-channel contact footer
+│       │   │   ├── AdminLayout.tsx        # Responsive sidebar, mobile drawer
+│       │   │   └── FloatingContactActions.tsx # Side-by-side Call & WhatsApp buttons
+│       │   ├── ui/                        # Reusable atomic UI components:
+│       │   │   ├── Button.tsx
+│       │   │   ├── Card.tsx
+│       │   │   ├── Badge.tsx
+│       │   │   ├── Select.tsx
+│       │   │   ├── Textarea.tsx
+│       │   │   └── Input.tsx              # Strict numericOnly & phoneOnly filtering
+│       │   └── sections/                  # Homepage hero, services, FAQ sections
+│       └── pages/
+│           ├── Home.tsx                   # Landing page
+│           ├── Booking.tsx                # Step-by-step courier booking wizard
+│           ├── Track.tsx                  # Public dispatch tracker by Request ID
+│           ├── Services.tsx               # Service tiers & pricing breakdown
+│           ├── ServiceAreas.tsx           # Coverage map & operational hubs
+│           ├── Contact.tsx                # Multi-channel directory & direct message form
+│           ├── FAQ.tsx                    # Interactive searchable FAQs
+│           ├── Login.tsx                  # Secure admin sign-in with logo
+│           └── admin/
+│               ├── Dashboard.tsx          # Real-time metrics and quick stats
+│               ├── Requests.tsx           # Searchable dispatch queue with status dots
+│               ├── RequestDetail.tsx      # Dispatch inspector & status updater
+│               ├── Services.tsx           # Edit/Create delivery tiers & prices
+│               ├── Areas.tsx              # Service zones & coverage radius editor
+│               ├── FAQs.tsx               # FAQ knowledgebase editor
+│               ├── Contact.tsx            # Multi-channel contacts manager
+│               └── Settings.tsx           # Change admin username & password
+│
+└── backend/                    # Server-side API application
+    ├── package.json            # Express, Prisma, JWT dependencies
+    ├── prisma/
+    │   ├── schema.prisma       # Database models (User, Request, Service, Area, FAQ)
+    │   ├── dev.db              # SQLite persistent database storage
+    │   └── seed.ts             # Initial administrative user & default services
+    └── src/
+        ├── app.ts              # Express application configuration & middlewares
+        ├── index.ts            # Backend standalone runner
+        ├── config.ts           # Typed environment variable loader
+        ├── lib/
+        │   ├── prisma.ts       # Prisma Client singleton
+        │   ├── jwt.ts          # JSON Web Token signing & decoding
+        │   └── password.ts     # Scrypt hashing and verification
+        ├── middleware/
+        │   ├── auth.ts         # JWT verification & role enforcement
+        │   ├── validate.ts     # Zod payload validation middleware
+        │   └── rateLimit.ts    # Rate limiting for brute-force protection
+        ├── routes/
+        │   ├── auth.ts         # Login, logout, profile/password update endpoints
+        │   └── requests.ts     # Public bookings & admin CRUD routes
+        └── validation/
+            └── schemas.ts      # Strict Zod schemas with phone number regex
+
+--------------------------------------------------------------------------------
+4. HOW TO EDIT & CUSTOMIZE
+--------------------------------------------------------------------------------
+A. Branding & Logo:
+   - Replace `/frontend/public/logo.jpg` with your company logo. The app
+     automatically references this image in the Navbar, Footer, Login screen,
+     and Admin sidebar.
+   - Adjust theme colors in `/frontend/tailwind.config.js` under the `brand` key:
+     `brand.red`, `brand.black`, `brand.white`, `brand.grey`.
+
+B. Adding & Managing Contact Channels:
+   - Log into the Admin Panel at `/admin` -> "Contact Info".
+   - You can add unlimited communication channels:
+     * Multiple WhatsApp lines (e.g. "Main Support", "Night Dispatch")
+     * Multiple Phone lines with extension numbers
+     * Facebook Page URLs
+     * Instagram handles or direct profile links
+     * Telegram channels or direct messenger links
+     * LinkedIn company pages
+   - All channels instantly synchronize across the website:
+     * Header & Footer
+     * The Contact Page directory
+     * The floating "Call Us" and "WhatsApp" quick-action widgets
+
+C. Services, Rates & Zones:
+   - Edit starting prices and service descriptions directly in `/admin/services`.
+   - Update delivery zones, coverage radius, and active hubs in `/admin/areas`.
+   - Update FAQs in `/admin/faqs`.
+
+D. Input Validation Rules:
+   - Any `<Input />` component in the frontend supports:
+     * `numericOnly={true}`: Disallows letters and symbols entirely.
+     * `phoneOnly={true}`: Only allows digits, spaces, hyphens, and leading plus sign (+).
+     * `allowDecimal={true}`: Permits floating-point decimal prices.
+   - Server-side validations are located in `/backend/src/validation/schemas.ts`.
+
+--------------------------------------------------------------------------------
+5. HOW TO RUN & TEST
+--------------------------------------------------------------------------------
+A. Install Dependencies:
+   npm install
+
+B. Development Mode (Runs Frontend & Backend unified on port 3000):
+   npm run dev
+
+C. Building for Production:
+   npm run build
+   (Compiles the frontend with Vite into dist/public and backend into dist)
+
+D. Running Production:
+   npm start
+   (Executes node server.ts serving both APIs and pre-rendered frontend)
+
+E. Database Migrations & Reset:
+   cd backend
+   npx prisma migrate dev --name init
+   npx prisma db seed
+
+--------------------------------------------------------------------------------
+6. DEFAULT ADMINISTRATIVE CREDENTIALS
+--------------------------------------------------------------------------------
+Default Admin URL: /admin
+Default Email:     admin@godeliver.local
+Default Password:  AdminSecure2026!
+Note: The password and username can be safely changed anytime via the
+"Settings" page located in the Admin Dashboard (`/admin/settings`).
+
+--------------------------------------------------------------------------------
+7. PRODUCTION DEPLOYMENT GUIDELINES
+--------------------------------------------------------------------------------
+A. Environment Variables (.env):
+   PORT=3000
+   NODE_ENV=production
+   DATABASE_URL="file:./prisma/dev.db"  (or "postgresql://user:pass@host:5432/dbname")
+   JWT_SECRET="generate-a-strong-random-64-character-secret"
+   JWT_EXPIRES_IN="7d"
+   BUSINESS_EMAIL="support@godeliver.com"
+   WHATSAPP_NUMBER="+1 (800) 463-3548"
+
+B. Docker / Container Deployment:
+   - Base image: node:20-alpine
+   - Expose port 3000
+   - Run command: npm run build && npm start
+
+C. Reverse Proxy (Nginx / Cloudflare):
+   - Proxy all incoming requests to http://localhost:3000
+   - Enable WebSocket pass-through if HMR is used during staging
+   - Set X-Forwarded-For, X-Forwarded-Proto headers (Express trust proxy is enabled)
+
+================================================================================
+End of Document - EVS Tech Information Specification
+================================================================================
